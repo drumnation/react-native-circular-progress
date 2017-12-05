@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { View, Platform, ViewPropTypes } from 'react-native';
-import { Surface, Shape, Path, Group } from '../../react-native/Libraries/ART/ReactNativeART';
+import { View, ViewPropTypes, Platform, ART } from 'react-native';
+const { Surface, Shape, Path, Group } = ART;
 import MetricsPath from 'art/metrics/path';
 
 export default class CircularProgress extends React.Component {
@@ -15,20 +15,14 @@ export default class CircularProgress extends React.Component {
   }
 
   extractFill(fill) {
-    if (fill < 0.01) {
-      return 0;
-    } else if (fill > 100) {
-      return 100;
-    }
-
-    return fill;
+    return Math.min(100, Math.max(0, fill));
   }
 
   render() {
-    const { size, width, tintColor, backgroundColor, style, rotation, linecap, children } = this.props;
+    const { size, width, backgroundWidth, tintColor, backgroundColor, style, rotation, linecap, children } = this.props;
     const backgroundPath = this.circlePath(size / 2, size / 2, size / 2 - width / 2, 0, 360 * .9999);
 
-    const fill = this.extractFill(this.props.fill);    
+    const fill = this.extractFill(this.props.fill);
     const circlePath = this.circlePath(size / 2, size / 2, size / 2 - width / 2, 0, (360 * .9999) * fill / 100);
 
     return (
@@ -39,7 +33,7 @@ export default class CircularProgress extends React.Component {
           <Group rotation={rotation - 90} originX={size/2} originY={size/2}>
             <Shape d={backgroundPath}
                    stroke={backgroundColor}
-                   strokeWidth={width}/>
+                   strokeWidth={backgroundWidth != null ? backgroundWidth : width}/>
             <Shape d={circlePath}
                    stroke={tintColor}
                    strokeWidth={width}
@@ -59,6 +53,7 @@ CircularProgress.propTypes = {
   size: PropTypes.number.isRequired,
   fill: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired,
+  backgroundWidth: PropTypes.number,
   tintColor: PropTypes.string,
   backgroundColor: PropTypes.string,
   rotation: PropTypes.number,
